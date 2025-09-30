@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.fillit.app-mergeDebugResources-53:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Star\\.gradle\\caches\\9.0-milestone-1\\transforms\\b830c3c7ffae93b3f682724de216601a\\transformed\\jetified-material3-release\\res\\values-v30\\values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}
