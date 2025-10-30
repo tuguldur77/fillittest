@@ -118,8 +118,8 @@ fun AddScheduleScreen(onBack: () -> Unit, onSave: () -> Unit) {
             Button(
                 enabled = !isLoading,
                 onClick = {
-                    if (title.isBlank() || start.isBlank()) {
-                        Toast.makeText(context, "제목과 시작 시간은 필수입니다.", Toast.LENGTH_SHORT).show()
+                    if (title.isBlank() || start.isBlank() || end.isBlank()) {
+                        Toast.makeText(context, "제목, 시작 시간, 종료 시간을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
+import java.util.Date
 import java.util.UUID
 
 /**
@@ -22,14 +23,9 @@ object EventRepository {
     private const val COLLECTION_NAME = "events"
     private val db = Firebase.firestore
 
-    /**
-     * 새로운 일정을 Firestore에 추가합니다.
-     */
     suspend fun addEvent(event: Event): Result<String> {
         val currentUserId = SessionManager.userId
-        if (currentUserId.isNullOrBlank()) {
-            return Result.failure(Exception("로그인한 사용자 정보가 없습니다."))
-        }
+            ?: return Result.failure(Exception("로그인한 사용자 정보가 없습니다."))
 
         return when (event.recurrence) {
             Recurrence.NONE -> addSingleEvent(event, currentUserId)
@@ -38,28 +34,19 @@ object EventRepository {
         }
     }
 
-    /**
-     * 특정 날짜에 해당하는 모든 일정을 Firestore에서 가져옵니다.
-     *
-     * @param date 일정을 가져올 날짜.
-     * @return 성공 시 Event 목록을 담은 Result.success, 실패 시 Exception을 담은 Result.failure를 반환합니다.
-     */
     suspend fun getEventsForDate(date: LocalDate): Result<List<Event>> {
         val currentUserId = SessionManager.userId
-        if (currentUserId.isNullOrBlank()) {
-            return Result.failure(Exception("로그인한 사용자 정보가 없습니다."))
-        }
+            ?: return Result.failure(Exception("로그인한 사용자 정보가 없습니다."))
 
         return try {
-            // 해당 날짜의 시작(00:00:00)과 끝(23:59:59) Timestamp 계산
             val startOfDay = Timestamp(date.atStartOfDay(ZoneId.systemDefault()).toInstant().epochSecond, 0)
             val endOfDay = Timestamp(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().epochSecond - 1, 999_999_999)
 
             val querySnapshot = db.collection(COLLECTION_NAME)
-                .whereEqualTo("userId", currentUserId) // 내 일정만 필터링
+                .whereEqualTo("userId", currentUserId)
                 .whereGreaterThanOrEqualTo("startTime", startOfDay)
                 .whereLessThanOrEqualTo("startTime", endOfDay)
-                .orderBy("startTime") // 시간순으로 정렬
+                .orderBy("startTime")
                 .get()
                 .await()
 
@@ -73,8 +60,17 @@ object EventRepository {
     }
 
     private suspend fun addSingleEvent(event: Event, userId: String): Result<String> {
-        if (event.startTime != null && event.endTime != null && event.startTime.seconds >= event.endTime.seconds) {
-            return Result.failure(Exception("종료 시간은 시작 시간보다 늦어야 합니다."))
+        if (event.startTime != null && event.endTime != null) {
+            // 시간 순서 검사
+            if (event.startTime.seconds >= event.endTime.seconds) {
+                return Result.failure(Exception("종료 시간은 시작 시간보다 늦어야 합니다."))
+            }
+            // 시간 중복 검사
+            val date = event.startTime.toDate().toLocalDate()
+            val eventsOnSameDay = getEventsForDate(date).getOrNull() ?: emptyList()
+            if (isOverlapping(event, eventsOnSameDay)) {
+                return Result.failure(Exception("다른 일정과 시간이 겹칩니다."))
+            }
         }
 
         return try {
@@ -92,8 +88,16 @@ object EventRepository {
         val startTime = event.startTime
             ?: return Result.failure(Exception("반복 일정에는 시작 시간이 반드시 필요합니다."))
 
-        if (event.endTime != null && startTime.seconds >= event.endTime.seconds) {
-            return Result.failure(Exception("종료 시간은 시작 시간보다 늦어야 합니다."))
+        if (event.endTime != null) {
+            if (startTime.seconds >= event.endTime.seconds) {
+                return Result.failure(Exception("종료 시간은 시작 시간보다 늦어야 합니다."))
+            }
+            // 첫 번째 일정에 대해 시간 중복 검사
+            val date = startTime.toDate().toLocalDate()
+            val eventsOnSameDay = getEventsForDate(date).getOrNull() ?: emptyList()
+            if (isOverlapping(event, eventsOnSameDay)) {
+                return Result.failure(Exception("반복 시작일의 일정이 다른 일정과 시간이 겹칩니다."))
+            }
         }
 
         return try {
@@ -101,31 +105,18 @@ object EventRepository {
             val groupId = UUID.randomUUID().toString()
             val baseEvent = event.copy(
                 userId = userId,
-                startTime = startTime, 
                 recurringGroupId = groupId,
                 recurrence = Recurrence.WEEKLY
             )
 
-            val calendar = Calendar.getInstance()
-            calendar.time = startTime.toDate()
+            val calendar = Calendar.getInstance().apply { time = startTime.toDate() }
+            val durationSeconds = event.endTime?.let { it.seconds - startTime.seconds }
 
-            val durationSeconds = baseEvent.endTime?.let { endTime ->
-                endTime.seconds - startTime.seconds
-            }
-
-            for (i in 0 until 52) { // 1년치(52주) 일정 생성
+            for (i in 0 until 52) { // 1년치
                 val newStartTime = Timestamp(calendar.time)
-                val newEndTime = if (durationSeconds != null) {
-                    Timestamp(newStartTime.seconds + durationSeconds, 0)
-                } else {
-                    null
-                }
+                val newEndTime = durationSeconds?.let { Timestamp(newStartTime.seconds + it, 0) }
 
-                val weeklyEvent = baseEvent.copy(
-                    startTime = newStartTime,
-                    endTime = newEndTime
-                )
-
+                val weeklyEvent = baseEvent.copy(startTime = newStartTime, endTime = newEndTime)
                 val docRef = db.collection(COLLECTION_NAME).document()
                 batch.set(docRef, weeklyEvent)
 
@@ -133,11 +124,30 @@ object EventRepository {
             }
 
             batch.commit().await()
-            Log.d("EventRepository", "Weekly recurring events (52) added with group ID: $groupId")
             Result.success(groupId)
         } catch (e: Exception) {
-            Log.e("EventRepository", "Error adding weekly recurring events", e)
             Result.failure(e)
         }
+    }
+
+    /**
+     * 새 이벤트가 기존 이벤트 목록과 시간이 겹치는지 확인합니다.
+     */
+    private fun isOverlapping(newEvent: Event, existingEvents: List<Event>): Boolean {
+        val newStart = newEvent.startTime?.seconds ?: return false
+        val newEnd = newEvent.endTime?.seconds ?: return false
+
+        return existingEvents.any { existingEvent ->
+            val existingStart = existingEvent.startTime?.seconds ?: return@any false
+            val existingEnd = existingEvent.endTime?.seconds ?: return@any false
+
+            // 겹치는 조건: newStart가 existingEnd보다 빠르고, newEnd가 existingStart보다 늦을 때
+            newStart < existingEnd && newEnd > existingStart
+        }
+    }
+
+    // Timestamp를 LocalDate로 변환하는 확장 함수
+    private fun Date.toLocalDate(): LocalDate {
+        return this.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
     }
 }

@@ -138,7 +138,7 @@ fun EventCard(event: Event) {
             .fillMaxWidth(),
         verticalAlignment = Alignment.Top
     ) {
-        Column(Modifier.width(60.dp), horizontalAlignment = Alignment.End) {
+        Column(Modifier.width(60.dp), horizontalAlignment = Alignment.Start) {
             Text(event.startTime.toFormattedString("HH:mm"), fontWeight = FontWeight.Bold, color = Color(0xFF6B4EFF))
             Text(event.endTime.toFormattedString("HH:mm"), fontSize = 12.sp, color = Color(0xFFBDBDBD))
         }
@@ -157,10 +157,8 @@ fun EventCard(event: Event) {
         Text(
             text = event.startTime.getDuration(event.endTime),
             fontSize = 12.sp,
-            color = Color(0xFF6B4EFF),
-            modifier = Modifier
-                .background(Color(0x1A6B4EFF), RoundedCornerShape(50))
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+            color = Color.Gray,
+            modifier = Modifier.padding(vertical = 4.dp) // Removed background
         )
     }
 }

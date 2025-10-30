@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -88,6 +89,17 @@ fun AppNavHost(
         }
         composable(Route.Schedule.name) {
             val scheduleViewModel: ScheduleViewModel = viewModel()
+            val newEventSaved = navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.getLiveData<Boolean>("event_saved")?.value
+
+            LaunchedEffect(newEventSaved) {
+                if (newEventSaved == true) {
+                    scheduleViewModel.refreshEvents()
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("event_saved")
+                }
+            }
+
             ScheduleViewScreen(
                 current = Route.Schedule,
                 onNavigate = { route -> navController.navigate(route.name) },
@@ -98,7 +110,10 @@ fun AppNavHost(
         composable(Route.AddSchedule.name) {
             AddScheduleScreen(
                 onBack = { navController.popBackStack() },
-                onSave = { navController.popBackStack() }
+                onSave = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("event_saved", true)
+                    navController.popBackStack()
+                }
             )
         }
         composable(Route.Recommendations.name) {
