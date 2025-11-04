@@ -534,4 +534,5 @@ int styleable StateListDrawable_android_enterFadeDuration 4
 int styleable StateListDrawable_android_exitFadeDuration 5
 int[] styleable StateListDrawableItem { 0x01010199 }
 int styleable StateListDrawableItem_android_drawable 0
-int xml image_share_filepaths 0x7f0f0000
+int xml ga_ad_services_config 0x7f0f0000
+int xml image_share_filepaths 0x7f0f0001

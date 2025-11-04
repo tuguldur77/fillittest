@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.fillit.app-mergeDebugResources-69:/values-v21/values-v21.xml",
+            "outputFile": "com.fillit.app-mergeDebugResources-66:/values-v21/values-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Star\\.gradle\\caches\\9.0-milestone-1\\transforms\\6523b38cbb1f86c73a2329bb99b138f3\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
+                    "source": "C:\\Users\\Star\\.gradle\\caches\\9.0-milestone-1\\transforms\\96ac682a9ff3fc0eae3ab3b688d7a6c3\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,13",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Star\\.gradle\\caches\\9.0-milestone-1\\transforms\\7bd7c93ec216eb31fb236fe35495e447\\transformed\\jetified-credentials-play-services-auth-1.2.0-rc01\\res\\values-v21\\values-v21.xml",
+                    "source": "C:\\Users\\Star\\.gradle\\caches\\9.0-milestone-1\\transforms\\7730c6d4ede79a5f744da3f2c39c3022\\transformed\\jetified-credentials-play-services-auth-1.2.0-rc01\\res\\values-v21\\values-v21.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
