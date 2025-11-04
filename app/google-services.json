@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "153278271877-mv577mmdq5spc6er76kumet1ge555a9b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fillit.app",
+            "certificate_hash": "d650659bcad3d75e63ffda561cb31edef3961d0f"
+          }
+        },
+        {
           "client_id": "153278271877-1366u1dk1i7pbros5n481o5mafrcap50.apps.googleusercontent.com",
           "client_type": 3
         }
