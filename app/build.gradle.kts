@@ -29,8 +29,8 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -50,6 +50,8 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.compose.ui:ui")
@@ -58,9 +60,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.google.accompanist:accompanist-flowlayout:0.34.0")
-    implementation("com.google.accompanist:accompanist-flowlayout:0.28.0")
     implementation("androidx.compose.material:material-icons-extended")
-
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
 
 
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -72,5 +73,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore:25.1.0")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.0")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 }

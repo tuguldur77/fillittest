@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".FillItApplication"
         android:allowBackup="true"
         android:label="FillIt"
         android:icon="@mipmap/ic_launcher"
